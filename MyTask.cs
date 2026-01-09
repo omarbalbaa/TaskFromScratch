@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 
 namespace TaskFromScratch;
@@ -94,6 +95,8 @@ public class MyTask
         }
         return task;
     }
+
+    public MyTaskAwaiter GetAwaiter() => new(this);
 
     public void SetResult() => completeTask(exception: null);
     public void SetException(Exception exception) => completeTask(exception);

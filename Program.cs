@@ -2,12 +2,12 @@
 
 Console.WriteLine($"Starting thread Id: {Environment.CurrentManagedThreadId}");
 
-MyTask.Run(() => Console.WriteLine($"First custom task thread Id: {Environment.CurrentManagedThreadId}")).Wait();
+await MyTask.Run(() => Console.WriteLine($"First custom task thread Id: {Environment.CurrentManagedThreadId}"));
 
-MyTask.Delay(TimeSpan.FromSeconds(1)).Wait();
+await MyTask.Delay(TimeSpan.FromSeconds(1));
 
 Console.WriteLine($"Second custom task thread Id: {Environment.CurrentManagedThreadId}");
 
-MyTask.Delay(TimeSpan.FromSeconds(1)).Wait();
+await MyTask.Delay(TimeSpan.FromSeconds(1));
 
-MyTask.Run(() => Console.WriteLine($"Third custom task thread Id: {Environment.CurrentManagedThreadId}")).Wait();
+await MyTask.Run(() => Console.WriteLine($"Third custom task thread Id: {Environment.CurrentManagedThreadId}"));
