@@ -1,3 +1,5 @@
+using System.Runtime.ExceptionServices;
+
 namespace TaskFromScratch;
 
 public class MyTask
@@ -18,6 +20,13 @@ public class MyTask
         }
     }
 
+    public static MyTask Delay(TimeSpan delay)
+    {
+        MyTask task = new();
+        new Timer(_ => task.SetResult()).Change(delay, Timeout.InfiniteTimeSpan);
+        return task;
+    }
+
     public static MyTask Run(Action action)
     {
         MyTask task = new();
@@ -28,12 +37,33 @@ public class MyTask
                 action();
                 task.SetResult();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 task.SetException(e);
             }
         });
         return task;
+    }
+
+    public void Wait()
+    {
+        ManualResetEventSlim? resetEventSlim = null;
+
+        lock (_lock)
+        {
+            if (!_completed)
+            {
+                resetEventSlim = new ManualResetEventSlim();
+                ContinueWith(() => resetEventSlim.Set());
+            }
+        }
+
+        resetEventSlim?.Wait();
+
+        if (_exception is not null)
+        {
+            ExceptionDispatchInfo.Throw(_exception);
+        }
     }
 
     public MyTask ContinueWith(Action action)
@@ -47,10 +77,10 @@ public class MyTask
                 {
                     try
                     {
-                    action();
-                    task.SetResult();
+                        action();
+                        task.SetResult();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         task.SetException(e);
                     }
@@ -65,10 +95,10 @@ public class MyTask
         return task;
     }
 
-    public void SetResult() => completeTask( exception : null );
-    public void SetException(Exception exception) => completeTask( exception );
+    public void SetResult() => completeTask(exception: null);
+    public void SetException(Exception exception) => completeTask(exception);
 
-    private void completeTask (Exception? exception)
+    private void completeTask(Exception? exception)
     {
         lock (_lock)
         {
@@ -76,7 +106,7 @@ public class MyTask
                 throw new InvalidOperationException(
                     "Task already completed. Cannot set result of a completed task."
                     );
-            
+
             _completed = true;
             _exception = exception;
 
